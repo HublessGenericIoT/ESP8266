@@ -7,17 +7,17 @@
 
 /*DEFAULT CONFIGURATIONS*/
 
-#define MQTT_HOST			"ubuntu-david.cloudapp.net" //or "mqtt.yourdomain.com"
+#define MQTT_HOST			"" //or "mqtt.yourdomain.com"
 #define MQTT_PORT			1883
 #define MQTT_BUF_SIZE		1024
 #define MQTT_KEEPALIVE		120	 /*second*/
 
 #define MQTT_CLIENT_ID		"ESP_8266"
-#define MQTT_USER			"client"
-#define MQTT_PASS			"BW8iO21i3Z89"
+#define MQTT_USER			""
+#define MQTT_PASS			""
 
-#define STA_SSID "NexusNet"
-#define STA_PASS "yodle5435tc"
+#define STA_SSID ""
+#define STA_PASS ""
 #define STA_TYPE AUTH_WPA2_PSK
 
 #define MQTT_RECONNECT_TIMEOUT 	5	/*second*/
