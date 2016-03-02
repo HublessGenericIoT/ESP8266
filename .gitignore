@@ -30,3 +30,6 @@
 
 # Debug files
 *.dSYM/
+
+# Config
+src/include/mqtt_config.h
