@@ -8,3 +8,4 @@
 
 void hubless_webserver_setup();
 void hubless_webserver_loop();
+void hubless_webserver_dc();

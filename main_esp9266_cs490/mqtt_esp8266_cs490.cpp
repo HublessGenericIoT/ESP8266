@@ -31,6 +31,7 @@ void setup_wifi() {
   Serial.println("WiFi connected");
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
+  connectedToWifi = 1;
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
@@ -132,7 +133,6 @@ void hubless_mqtt_loop() {
   connectedToWifi = 1;
   client.loop();
 
-  Serial.println("going to publish");
   long now = millis();  
   if (now - lastMsg > 2000) {
     lastMsg = now;

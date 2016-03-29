@@ -66,6 +66,10 @@ void handleSetup() {
   hubless_mqtt_setup();
 }
 
+void hubless_webserver_dc() {
+  WiFi.disconnect();
+}
+
 void hubless_webserver_setup () {
   //initialize the LEDs and serial outputs
 	pinMode ( led, OUTPUT );
@@ -74,6 +78,7 @@ void hubless_webserver_setup () {
 
   //begin the access point
 	Serial.println ( "Configuring access point..." );
+  WiFi.mode(WIFI_AP_STA);
   WiFi.softAP(ssid);
   IPAddress myIP = WiFi.softAPIP();
   Serial.print("AP IP address: ");
