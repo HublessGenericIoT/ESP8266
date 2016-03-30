@@ -9,14 +9,13 @@ String content;
 
 ESP8266WebServer server ( 80 );
 
-const int led = 13;
+const int led = 2;
 
 void handleRoot() {
   server.send(200, "text/plain", "You are connected\n");
 }
 
 void handleNotFound() {
-	digitalWrite ( led, 1 );
 	String message = "File Not Found\n\n";
 	message += "URI: ";
 	message += server.uri();
@@ -31,7 +30,6 @@ void handleNotFound() {
 	}
 
 	server.send ( 404, "text/plain", message );
-	digitalWrite ( led, 0 );
 }
 
 void handleSetup() {
@@ -55,7 +53,7 @@ void handleSetup() {
 
   //print the data to the config file
   root.printTo(configFile);
-  digitalWrite ( led, 0 );
+  digitalWrite ( led, 1 );
 
   //send a success message
   content = "Configuration saved.\n";
@@ -73,7 +71,7 @@ void hubless_webserver_dc() {
 void hubless_webserver_setup () {
   //initialize the LEDs and serial outputs
 	pinMode ( led, OUTPUT );
-	digitalWrite ( led, 0 );
+	digitalWrite ( led, 1 );
 	Serial.begin ( 115200 );
 
   //begin the access point

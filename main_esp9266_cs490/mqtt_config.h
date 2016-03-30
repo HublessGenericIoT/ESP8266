@@ -16,8 +16,6 @@
 #define MQTT_USER	"client"
 #define MQTT_PASS	"PurduePete"
 
-#define STA_SSID "AndroidAP"
-#define STA_PASS "084873a1372d"
 #define STA_TYPE AUTH_WPA2_PSK
 
 #define MQTT_RECONNECT_TIMEOUT 	5 /*second*/
