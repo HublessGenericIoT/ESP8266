@@ -12,7 +12,7 @@ ESP8266WebServer server ( 80 );
 const int led = 13;
 
 void handleRoot() {
-  server.send(200, "text/html", "<h1>You are connected</h1>");
+  server.send(200, "text/plain", "You are connected\n");
 }
 
 void handleNotFound() {
@@ -55,12 +55,12 @@ void handleSetup() {
 
   //print the data to the config file
   root.printTo(configFile);
+  digitalWrite ( led, 0 );
 
   //send a success message
-  content = "<!DOCTYPE HTML>\r\n<html>";
-  content += "<p>Configuration saved.</p></html>";
+  content = "Configuration saved.\n";
   
-  server.send(200, "text/html", content);
+  server.send(200, "text/plain", content);
 
   //set up mqtt connection
   hubless_mqtt_setup();
