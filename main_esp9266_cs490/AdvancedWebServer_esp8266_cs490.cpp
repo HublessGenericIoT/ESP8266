@@ -6,49 +6,64 @@ const char *password = "";
 
 const char *st = "<ol>";
 String content;
+const int led = 2;
 
 ESP8266WebServer server ( 80 );
 
-const int led = 2;
+
 
 void handleRoot() {
-  server.send(200, "text/plain", "You are connected\n");
+  StaticJsonBuffer<200> jsonBuffer;
+  JsonObject& jsonMsg = jsonBuffer.createObject();
+  String msg = "";
+  
+  jsonMsg["msg"] = "You are connected!";
+  jsonMsg.prettyPrintTo(msg);
+  
+  server.send(200, "application/json", msg);
 }
 
 void handleNotFound() {
-	String message = "File Not Found\n\n";
-	message += "URI: ";
-	message += server.uri();
-	message += "\nMethod: ";
-	message += ( server.method() == HTTP_GET ) ? "GET" : "POST";
-	message += "\nArguments: ";
-	message += server.args();
-	message += "\n";
+   StaticJsonBuffer<200> jsonBuffer;
+  JsonObject& failureMsg = jsonBuffer.createObject();
+	String msg = "";
+  failureMsg["msg"] = "File Not Found";
+  failureMsg.prettyPrintTo(msg);
 
-	for ( uint8_t i = 0; i < server.args(); i++ ) {
-		message += " " + server.argName ( i ) + ": " + server.arg ( i ) + "\n";
-	}
-
-	server.send ( 404, "text/plain", message );
+	server.send ( 400, "application/json", msg );
 }
 
 void handleSetup() {
+  StaticJsonBuffer<200> failureBuffer;
+  JsonObject& failureMsg = failureBuffer.createObject();
+  String msg = "";
+  
   //open a json file for writing
   File configFile = SPIFFS.open("/config.json", "w");
   if (!configFile) {
-    Serial.println("Failed to open config file for writing");
-    server.send(200, "text/plain", "failed1");
+    Serial.print("Failed to open config file for writing\n");
+    
+    failureMsg["msg"] = "Failed to open config file.";
+    failureMsg.prettyPrintTo(msg);
+
+    server.send(400, "application/json", msg);
     return;
   }
 
   //get the json data sent from the client
+  StaticJsonBuffer<512> jsonBuffer;
   String jsonData = server.arg(0);
-  StaticJsonBuffer<200> jsonBuffer;
   JsonObject& root = jsonBuffer.parseObject(jsonData);
 
   if(!root.success()) {
     Serial.println("parseObject() failed");
-    server.send(200, "text/plain", "failed2");
+    Serial.println(server.arg(0));
+    failureMsg["msg"] = "Failed to parse config file.";
+    failureMsg.prettyPrintTo(msg);
+
+    server.send(400, "application/json", msg);
+    
+    return;
   }
 
   //print the data to the config file
@@ -56,9 +71,12 @@ void handleSetup() {
   digitalWrite ( led, 1 );
 
   //send a success message
-  content = "Configuration saved.\n";
+  JsonObject& msgRoot = jsonBuffer.createObject();
   
-  server.send(200, "text/plain", content);
+  msgRoot["msg"] = "Configuration saved";
+  Serial.print("Configuration saved.\n");
+  msgRoot.prettyPrintTo(msg);
+  server.send(200, "application/json", msg);
 
   //set up mqtt connection
   hubless_mqtt_setup();
