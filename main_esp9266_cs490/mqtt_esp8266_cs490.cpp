@@ -1,26 +1,32 @@
 #include "mqtt_esp8266_cs490.h"
+#include <string.h>
 
 // Update these with values suitable for your network.
 WiFiClient espClient;
 PubSubClient client(espClient);
-long lastMsg = 0;
-char msg[50];
-int value = 0;
 
-const char* dev_id;
+//used to repeatedly send mqtt messages for demo purposes
+long lastMsg;
+long value;
+int now;
+char msg[75];
+char outTopic[100];
+char inTopic[100];
 
-const char* sta_ssid;
-const char* sta_pass;
-const char* sta_auth;
+//information about the device, wifi, and mqtt connections.
+char dev_id[50];
+char sta_ssid[50];
+char sta_pass[50];
+char sta_auth[50];
+char mqtt_user[50];
+char mqtt_pass[50];
+char mqtt_endpoint[50];
+int mqtt_port = 1883;
 
-const char* mqtt_user;
-const char* mqtt_pass;
-const char* mqtt_endpoint;
-
+//wifi connection status
 int connectedToWifi;
 
-String deviceLastStatus = "";
-
+//led pin value
 const int led = 2;
 
 void setup_wifi() {
@@ -63,7 +69,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
 }
 
 void reconnect() {
-  // Loop until we're reconnected
+  // Loop until we're reconnected  
   while (!client.connected()) {
     Serial.print("Attempting MQTT connection...");
     
@@ -72,22 +78,11 @@ void reconnect() {
       Serial.println("connected");
       
       // Once connected, publish an announcement...
-      char outTopic[128];
-      char outMsg[128];
-      snprintf(outTopic, 128, "%s/outTopic", dev_id);
-      snprintf(outMsg, 128, "%s is connected!", dev_id);
-      
-      client.publish(outTopic, outMsg);
+      client.publish(outTopic, "connected.");
       
       // ... and resubscribe
-      char subMe[128];
-      snprintf(subMe, 128, "proxy/%s/inTopic");
-
-      char subShadow[128];
-      snprintf(subShadow, 128, "$aws/things/%s/shadow/update/accepted");
-      
-      client.subscribe(subMe);
-      client.subscribe(subShadow);
+      client.subscribe(inTopic);
+      //client.subscribe("$aws/things/22/shadow/update/accepted");
     } else {
       //try to reconnect to the AP
       Serial.print("failed, rc=");
@@ -135,17 +130,24 @@ bool loadConfig() {
 
   //parse the config items
   //device id
-  dev_id   = json["id"];
+  strcpy(dev_id, json["id"]);
   
   //wifi info
-  sta_ssid  = json["wifiConfig"]["ssid"];
-  sta_pass  = json["wifiConfig"]["password"];
-  sta_auth  = json["wifiConfig"]["authmode"];
+  strcpy(sta_ssid, json["wifiConfig"]["ssid"]);
+  strcpy(sta_pass, json["wifiConfig"]["password"]);
+  strcpy(sta_auth, json["wifiConfig"]["authmode"]);
   
   //mqtt info
-  mqtt_user = json["mqttConfig"]["user"];
-  mqtt_pass = json["mqttConfig"]["password"];
-  mqtt_endpoint = json["mqttConfig"]["endpoint"];
+  strcpy(mqtt_user, json["mqttConfig"]["user"]);
+  strcpy(mqtt_pass, json["mqttConfig"]["password"]);
+  strcpy(mqtt_endpoint, json["mqttConfig"]["endpoint"]);
+
+  //create topic strings
+  strcpy(outTopic, dev_id);
+  strcat(outTopic, "/outTopic");
+
+  strcpy(inTopic, dev_id);
+  strcat(inTopic, "/inTopic");
   
   return true;
 }
@@ -165,7 +167,7 @@ void hubless_mqtt_setup() {
   setup_wifi();
   
   //set mqtt server
-  client.setServer(mqtt_endpoint, MQTT_PORT);
+  client.setServer(mqtt_endpoint, mqtt_port);
 
   //set callback function
   client.setCallback(callback);
@@ -180,17 +182,16 @@ void hubless_mqtt_loop() {
   connectedToWifi = 1;
   client.loop();
 
-//  check_shadow();
-
-//  long now = millis();  
-//  if (now - lastMsg > 2000) {
-//    lastMsg = now;
-//    ++value;
-//    snprintf (msg, 75, "hello world #%ld", value);
-//    Serial.print("Publish message: ");
-//    Serial.println(msg);
-//
-//    //check and update device shadow
-//    client.publish("esp_8266/outTopic", msg);
-//  }
+  long now = millis();  
+  if (now - lastMsg > 2000) {
+    lastMsg = now;
+    ++value;
+    
+    //publish demo message to '<dev_id>/outTopic'
+    snprintf (msg, 75, "hello world #%ld", value);
+    Serial.print(outTopic);
+    Serial.print(" : ");
+    Serial.println(msg);
+    client.publish(outTopic, msg);
+  }
 }

@@ -1,6 +1,5 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
-#include "mqtt_config.h"
 #include "FS.h"
 #include <ArduinoJson.h>
 

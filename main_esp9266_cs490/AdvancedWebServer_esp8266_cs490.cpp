@@ -1,51 +1,30 @@
 #include "AdvancedWebServer_esp8266_cs490.h"
 #include "mqtt_esp8266_cs490.h"
 
-const char *ssid = MQTT_CLIENT_ID;
-const char *password = "";
-
-const char *st = "<ol>";
-String content;
+const char *ssid = "Hubless_ESP";
 const int led = 2;
 
 ESP8266WebServer server ( 80 );
 
-
-
 void handleRoot() {
-  StaticJsonBuffer<200> jsonBuffer;
-  JsonObject& jsonMsg = jsonBuffer.createObject();
-  String msg = "";
-  
-  jsonMsg["msg"] = "You are connected!";
-  jsonMsg.prettyPrintTo(msg);
-  
+  String msg = "{\"msg\":\"You are connected!\"}";
   server.send(200, "application/json", msg);
 }
 
 void handleNotFound() {
-   StaticJsonBuffer<200> jsonBuffer;
-  JsonObject& failureMsg = jsonBuffer.createObject();
-	String msg = "";
-  failureMsg["msg"] = "File Not Found";
-  failureMsg.prettyPrintTo(msg);
+	String msg = "{\"msg\":\"File Not found\"}";
 
 	server.send ( 400, "application/json", msg );
 }
 
 void handleSetup() {
-  StaticJsonBuffer<200> failureBuffer;
-  JsonObject& failureMsg = failureBuffer.createObject();
   String msg = "";
   
   //open a json file for writing
   File configFile = SPIFFS.open("/config.json", "w");
   if (!configFile) {
     Serial.print("Failed to open config file for writing\n");
-    
-    failureMsg["msg"] = "Failed to open config file.";
-    failureMsg.prettyPrintTo(msg);
-
+    msg = "{\"msg\":\"Failed to open config file for writing.\"}";
     server.send(400, "application/json", msg);
     return;
   }
@@ -57,10 +36,7 @@ void handleSetup() {
 
   if(!root.success()) {
     Serial.println("parseObject() failed");
-    Serial.println(server.arg(0));
-    failureMsg["msg"] = "Failed to parse config file.";
-    failureMsg.prettyPrintTo(msg);
-
+    msg = "{\"msg\":\"parseObject() failed\"}";
     server.send(400, "application/json", msg);
     
     return;
@@ -71,11 +47,6 @@ void handleSetup() {
   digitalWrite ( led, 1 );
 
   //send a success message
-  JsonObject& msgRoot = jsonBuffer.createObject();
-  
-  msgRoot["msg"] = "Configuration saved";
-  Serial.print("Configuration saved.\n");
-  msgRoot.prettyPrintTo(msg);
   server.send(200, "application/json", msg);
 
   //set up mqtt connection
