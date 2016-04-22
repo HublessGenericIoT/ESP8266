@@ -5,13 +5,14 @@
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-//used to repeatedly send mqtt messages for demo purposes
+//used to repeatedly send and recieve mqtt messages
 long lastMsg;
 long value;
 int now;
 char msg[75];
 char outTopic[100];
 char inTopic[100];
+char shadow[100];
 
 //information about the device, wifi, and mqtt connections.
 char dev_id[50];
@@ -28,6 +29,12 @@ int connectedToWifi;
 
 //led pin value
 const int led = 2;
+const int switchPin = 13;
+
+//desired/current state of the device
+char desiredState[50];
+char currentStateStr[50];
+int currentState;
 
 void setup_wifi() {
 
@@ -57,6 +64,8 @@ void setup_wifi() {
 void callback(char* topic, byte* payload, unsigned int length) {
   digitalWrite ( led, 0 );
   delay(10);
+
+  //print message to serial monitor (testing and demo)
   Serial.print("Message arrived [");
   Serial.print(topic);
   Serial.print("] ");
@@ -65,6 +74,42 @@ void callback(char* topic, byte* payload, unsigned int length) {
   }
   Serial.println();
   delay(10);
+
+  //did we get sent a shadow? if so, update the device status.
+  if((char)*topic == '$' ) {
+    //parse the incoming message (assume device shadow/json format)
+    StaticJsonBuffer<512> jsonBuffer;
+    JsonObject& json = jsonBuffer.parseObject((char*)payload);
+  
+    //check if parsing was successful
+    if (!json.success()) {
+      Serial.println("Failed to parse config file");
+      return;
+    }
+
+    //retrieve the desired state
+    strcpy(desiredState, json["state"]["desired"]["switch"]);
+
+    Serial.print("Desired State is ");
+    Serial.println(desiredState);
+
+    if(desiredState != currentStateStr) {
+      Serial.print("State changed from ");
+      Serial.print(currentStateStr);
+      Serial.print(" to ");
+      Serial.print(desiredState);
+      Serial.println(".");
+
+      //update the current state
+      strcpy(currentStateStr, desiredState);
+      
+      currentState = !currentState;
+      digitalWrite(switchPin, currentState);
+    }
+    
+    delay(10);
+  }
+
   digitalWrite ( led, 1 );
 }
 
@@ -82,7 +127,7 @@ void reconnect() {
       
       // ... and resubscribe
       client.subscribe(inTopic);
-      //client.subscribe("$aws/things/22/shadow/update/accepted");
+      client.subscribe(shadow, 1);
     } else {
       //try to reconnect to the AP
       Serial.print("failed, rc=");
@@ -148,6 +193,10 @@ bool loadConfig() {
 
   strcpy(inTopic, dev_id);
   strcat(inTopic, "/inTopic");
+
+  strcpy(shadow, "$aws/things/");
+  strcat(shadow, dev_id);
+  strcat(shadow, "/shadow/update/accepted");
   
   return true;
 }
@@ -158,9 +207,25 @@ void hubless_mqtt_setup() {
     Serial.println("Failed to mount file system.");
     return;
   }
-  
+
+  //wifi shouldn't be connected yet
   connectedToWifi = 0;
+
+  //set output pins
   pinMode(led, OUTPUT);
+  pinMode(switchPin, OUTPUT);
+
+  //set desired state based on reading the output pin
+  if(digitalRead(switchPin) == HIGH) {
+    strcpy(currentStateStr, "ON");
+    currentState = HIGH;
+  }
+  else{
+    strcpy(currentStateStr, "OFF");
+    currentState = LOW;
+  }
+
+  //start serial monitor output
   Serial.begin(115200);
 
   //connect to wifi
@@ -181,17 +246,19 @@ void hubless_mqtt_loop() {
   }
   connectedToWifi = 1;
   client.loop();
+  delay(10);
 
-  long now = millis();  
-  if (now - lastMsg > 2000) {
-    lastMsg = now;
-    ++value;
-    
-    //publish demo message to '<dev_id>/outTopic'
-    snprintf (msg, 75, "hello world #%ld", value);
-    Serial.print(outTopic);
-    Serial.print(" : ");
-    Serial.println(msg);
-    client.publish(outTopic, msg);
-  }
+  //demo output
+//  long now = millis();  
+//  if (now - lastMsg > 2000) {
+//    lastMsg = now;
+//    ++value;
+//    
+//    //publish demo message to '<dev_id>/outTopic'
+//    snprintf (msg, 75, "hello world #%ld", value);
+//    Serial.print(outTopic);
+//    Serial.print(" : ");
+//    Serial.println(msg);
+//    client.publish(outTopic, msg);
+//  }
 }

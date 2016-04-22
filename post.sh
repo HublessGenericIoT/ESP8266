@@ -1,1 +1,1 @@
-curl -X POST -H "Content-Type:application/json" -d '{"id":"22","wifiConfig":{"ssid":"RachellehcaR","password":"meatrix1","authmode": "0"}, "mqttConfig":{"user":"client", "password":"PurduePete", "endpoint":"ubuntu-david.cloudapp.net"}}' http://192.168.4.1/setup
+curl -X POST -H "Content-Type:application/json" -d '{"id":"22","wifiConfig":{"ssid":"AndroidAP","password":"meatrix1","authmode": "0"}, "mqttConfig":{"user":"", "password":"", "endpoint":"ec2-52-87-162-111.compute-1.amazonaws.com"}}' http://192.168.4.1/setup
