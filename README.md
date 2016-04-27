@@ -36,3 +36,21 @@ In order to compile and upload the code to the ESP8266 device you must have the 
   - Adafruit MQTT Library
   - ArduinoJson
   - PubSubClient
+
+## Arduino IDE Configurations
+
+- Board:  NodeMCU 1.0 (ESP-12E Module)
+- CPU Frequency: 80 MHz
+- Flash Size: 4M (3M SPIFFS)
+- Upload Speed: 115200
+- Port
+  - On Mac: /dev/cu.SLAB_USBtoUART
+  - Linux: /tty/USB0
+- Programmer: AVRISP mkII
+
+## Library Tweaks
+
+The PubSubClient library only allows a max packet size of 128 bytes by default. This causes an incoming message from AWS on a $aws/things/'device_id'/shadow/update/accepted when the device shadow changes to be ignored; the message size is >128. To solve this, update the variable 'MQTT_MAX_PACKET_SIZE', in the file 'PubSubClient.h', from 128 to 512.
+  - Location:
+    - Mac: /Users/'YourUsername'/Documents/Arduino/libraries/pubsubclient-2.6
+    - Linux: /home/'YourUsername'/Arduino/libraries/PubSubClient/src
