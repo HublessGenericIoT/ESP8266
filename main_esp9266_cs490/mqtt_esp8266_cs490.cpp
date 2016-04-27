@@ -58,7 +58,7 @@ void setup_wifi() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
   connectedToWifi = 1;
-  
+
   //WiFi.mode(WIFI_STA); this causes a crash to the device
 }
 
@@ -81,7 +81,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
     //parse the incoming message (assume device shadow/json format)
     StaticJsonBuffer<512> jsonBuffer;
     JsonObject& json = jsonBuffer.parseObject((char*)payload);
-  
+
     //check if parsing was successful
     if (!json.success()) {
       Serial.println("Failed to parse config file");
@@ -103,11 +103,11 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
       //update the current state
       strcpy(currentStateStr, desiredStateStr);
-      
+
       currentState = !currentState;
       digitalWrite(switchPin, currentState);
     }
-    
+
     delay(10);
   }
 
@@ -115,14 +115,14 @@ void callback(char* topic, byte* payload, unsigned int length) {
 }
 
 void reconnect() {
-  // Loop until we're reconnected  
+  // Loop until we're reconnected
   while (!client.connected()) {
     Serial.print("Attempting MQTT connection...");
-    
+
     // Attempt to connect to provided mqtt server
     if (client.connect(dev_id, mqtt_user, mqtt_pass)) {
       Serial.println("connected");
-      
+
       // Once connected, publish an announcement...
       client.publish(outTopic, "connected.");
 
@@ -131,12 +131,21 @@ void reconnect() {
       strcpy(updateMsg, "{\"state\":{\"desired\":{\"state\":\"");
       strcat(updateMsg, currentStateStr);
       strcat(updateMsg, "\"}}}");
-      
+
       Serial.print("Initialized shadow to: ");
       Serial.println(updateMsg);
+
+      Serial.print("Posting shadow to");
+      Serial.println(shadowUpdate);
+
       client.publish(shadowUpdate, updateMsg);
-      
+
       // ... and resubscribe
+
+      Serial.println("Subscribing to: ");
+      Serial.println(inTopic);
+      Serial.println(shadow);
+
       client.subscribe(inTopic);
       client.subscribe(shadow, 1);
     } else {
@@ -144,7 +153,7 @@ void reconnect() {
       Serial.print("failed, rc=");
       Serial.print(client.state());
       Serial.println(" try again in 5 seconds");
-      
+
       // Wait 5 seconds before retrying
       delay(5000);
     }
@@ -187,12 +196,12 @@ bool loadConfig() {
   //parse the config items
   //device id
   strcpy(dev_id, json["id"]);
-  
+
   //wifi info
   strcpy(sta_ssid, json["wifiConfig"]["ssid"]);
   strcpy(sta_pass, json["wifiConfig"]["password"]);
   strcpy(sta_auth, json["wifiConfig"]["authmode"]);
-  
+
   //mqtt info
   strcpy(mqtt_user, json["mqttConfig"]["user"]);
   strcpy(mqtt_pass, json["mqttConfig"]["password"]);
@@ -213,7 +222,7 @@ bool loadConfig() {
   strcpy(shadowUpdate, "$aws/things/");
   strcat(shadowUpdate, dev_id);
   strcat(shadowUpdate, "/shadow/update");
-  
+
   return true;
 }
 
@@ -246,7 +255,7 @@ void hubless_mqtt_setup() {
 
   //connect to wifi
   setup_wifi();
-  
+
   //set mqtt server
   client.setServer(mqtt_endpoint, mqtt_port);
 
@@ -265,11 +274,11 @@ void hubless_mqtt_loop() {
   delay(10);
 
   //demo output
-//  long now = millis();  
+//  long now = millis();
 //  if (now - lastMsg > 2000) {
 //    lastMsg = now;
 //    ++value;
-//    
+//
 //    //publish demo message to '<dev_id>/outTopic'
 //    snprintf (msg, 75, "hello world #%ld", value);
 //    Serial.print(outTopic);
