@@ -125,6 +125,10 @@ void reconnect() {
       
       // Once connected, publish an announcement...
       client.publish(outTopic, "connected.");
+
+      //Initialize shadow
+      Serial.print("Initialized shadow to: ");
+      Serial.println(updateMsg);
       
       // ... and resubscribe
       client.subscribe(inTopic);
@@ -248,10 +252,6 @@ void hubless_mqtt_setup() {
   strcpy(updateMsg, "{\"state\":{\"desired\":{\"switch\":\"");
   strcat(updateMsg, currentStateStr);
   strcat(updateMsg, "\"}}}");
-
-  Serial.print("Initialized shadow to: ");
-  Serial.println(updateMsg);
-  client.publish(shadowUpdate, updateMsg);
 }
 
 void hubless_mqtt_loop() {
