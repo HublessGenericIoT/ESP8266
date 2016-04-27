@@ -9,10 +9,11 @@ PubSubClient client(espClient);
 long lastMsg;
 long value;
 int now;
-char msg[75];
-char outTopic[100];
-char inTopic[100];
-char shadow[100];
+char msg[256];
+char outTopic[256];
+char inTopic[256];
+char shadow[256];
+char shadowUpdate[256];
 
 //information about the device, wifi, and mqtt connections.
 char dev_id[50];
@@ -197,6 +198,11 @@ bool loadConfig() {
   strcpy(shadow, "$aws/things/");
   strcat(shadow, dev_id);
   strcat(shadow, "/shadow/update/accepted");
+
+  //used to initialize a device shadow
+  strcpy(shadowUpdate, "$aws/things/");
+  strcat(shadowUpdate, dev_id);
+  strcat(shadowUpdate, "/shadow/update");
   
   return true;
 }
@@ -236,6 +242,16 @@ void hubless_mqtt_setup() {
 
   //set callback function
   client.setCallback(callback);
+
+  //update the shadow based on the current state
+  char updateMsg[50];
+  strcpy(updateMsg, "{\"state\":{\"desired\":{\"switch\":\"");
+  strcat(updateMsg, currentStateStr);
+  strcat(updateMsg, "\"}}}");
+
+  Serial.print("Initialized shadow to: ");
+  Serial.println(updateMsg);
+  client.publish(shadowUpdate, updateMsg);
 }
 
 void hubless_mqtt_loop() {
