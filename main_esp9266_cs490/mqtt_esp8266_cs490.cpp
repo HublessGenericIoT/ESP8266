@@ -32,7 +32,7 @@ const int led = 2;
 const int switchPin = 13;
 
 //desired/current state of the device
-char desiredState[50];
+char desiredStateStr[50];
 char currentStateStr[50];
 int currentState;
 
@@ -88,20 +88,20 @@ void callback(char* topic, byte* payload, unsigned int length) {
     }
 
     //retrieve the desired state
-    strcpy(desiredState, json["state"]["desired"]["switch"]);
+    strcpy(desiredStateStr, json["state"]["desired"]["switch"]);
 
     Serial.print("Desired State is ");
-    Serial.println(desiredState);
+    Serial.println(desiredStateStr);
 
-    if(desiredState != currentStateStr) {
+    if(String(desiredStateStr) != String(currentStateStr)) {
       Serial.print("State changed from ");
       Serial.print(currentStateStr);
       Serial.print(" to ");
-      Serial.print(desiredState);
+      Serial.print(desiredStateStr);
       Serial.println(".");
 
       //update the current state
-      strcpy(currentStateStr, desiredState);
+      strcpy(currentStateStr, desiredStateStr);
       
       currentState = !currentState;
       digitalWrite(switchPin, currentState);
