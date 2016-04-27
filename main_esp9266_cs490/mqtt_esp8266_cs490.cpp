@@ -89,7 +89,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
     }
 
     //retrieve the desired state
-    strcpy(desiredStateStr, json["state"]["desired"]["switch"]);
+    strcpy(desiredStateStr, json["state"]["desired"]["status"]);
 
     Serial.print("Desired State is ");
     Serial.println(desiredStateStr);
@@ -128,15 +128,24 @@ void reconnect() {
 
       //Initialize shadow
       char updateMsg[50];
-      strcpy(updateMsg, "{\"state\":{\"desired\":{\"switch\":\"");
+      strcpy(updateMsg, "{\"state\":{\"desired\":{\"status\":\"");
       strcat(updateMsg, currentStateStr);
       strcat(updateMsg, "\"}}}");
       
       Serial.print("Initialized shadow to: ");
       Serial.println(updateMsg);
+      
+      Serial.print("Posting shadow to");
+      Serial.println(shadowUpdate);
+      
       client.publish(shadowUpdate, updateMsg);
       
       // ... and resubscribe
+
+      Serial.println("Subscribing to: "); 
+      Serial.println(inTopic); 
+      Serial.println(shadow);
+      
       client.subscribe(inTopic);
       client.subscribe(shadow, 1);
     } else {
