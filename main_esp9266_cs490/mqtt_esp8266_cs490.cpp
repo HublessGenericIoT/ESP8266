@@ -89,7 +89,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
     }
 
     //retrieve the desired state
-    strcpy(desiredStateStr, json["state"]["desired"]["switch"]);
+    strcpy(desiredStateStr, json["state"]["desired"]["state"]);
 
     Serial.print("Desired State is ");
     Serial.println(desiredStateStr);
@@ -128,7 +128,7 @@ void reconnect() {
 
       //Initialize shadow
       char updateMsg[50];
-      strcpy(updateMsg, "{\"state\":{\"desired\":{\"switch\":\"");
+      strcpy(updateMsg, "{\"state\":{\"desired\":{\"state\":\"");
       strcat(updateMsg, currentStateStr);
       strcat(updateMsg, "\"}}}");
       
@@ -233,11 +233,11 @@ void hubless_mqtt_setup() {
 
   //set desired state based on reading the output pin
   if(digitalRead(switchPin) == HIGH) {
-    strcpy(currentStateStr, "ON");
+    strcpy(currentStateStr, "on");
     currentState = HIGH;
   }
   else{
-    strcpy(currentStateStr, "OFF");
+    strcpy(currentStateStr, "off");
     currentState = LOW;
   }
 

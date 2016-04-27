@@ -1,7 +1,7 @@
 #include "AdvancedWebServer_esp8266_cs490.h"
 #include "mqtt_esp8266_cs490.h"
 
-const char *ssid = "Hubless_ESP23";
+const char *ssid = "Hubless_ESP";
 const int led = 2;
 
 ESP8266WebServer server ( 80 );
