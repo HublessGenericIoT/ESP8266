@@ -1,3 +1,5 @@
+#define MQTT_MAX_PACKET_SIZE 512
+
 #include "AdvancedWebServer_esp8266_cs490.h"
 #include "mqtt_esp8266_cs490.h"
 
