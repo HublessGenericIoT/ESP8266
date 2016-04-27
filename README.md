@@ -50,6 +50,6 @@ In order to compile and upload the code to the ESP8266 device you must have the 
 
 ## Library Tweaks
 
-The PubSubClient library only allows a max packet size of 128 bytes by default. This causes an incoming message from AWS on a $aws/things/<device_id>/shadow/update/accepted when the device shadow changes to be ignored; the message size is >128. To solve this, update the variable 'MQTT_MAX_PACKET_SIZE', in the file 'PubSubClient.h', from 128 to 512.
+The PubSubClient library only allows a max packet size of 128 bytes by default. This causes an incoming message from AWS on a $aws/things/'device_id'/shadow/update/accepted when the device shadow changes to be ignored; the message size is >128. To solve this, update the variable 'MQTT_MAX_PACKET_SIZE', in the file 'PubSubClient.h', from 128 to 512.
   - Location:
     - On Mac: /Users/'YourUsername'/Documents/Arduino/libraries/pubsubclient-2.6/
